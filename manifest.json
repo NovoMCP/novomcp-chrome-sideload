@@ -1,0 +1,66 @@
+{
+  "manifest_version": 3,
+  "name": "NovoMCP (Sideload)",
+  "short_name": "NovoMCP",
+  "description": "Molecular intelligence for PubChem, ChEMBL, and preprints. Sideload build: configurable engine URL (defaults to https://api.novomcp.com; point at http://localhost:8018 for local OSS use).",
+  "version": "0.1.0",
+  "minimum_chrome_version": "116",
+  "icons": {
+    "16": "public/icons/icon-16.png",
+    "32": "public/icons/icon-32.png",
+    "48": "public/icons/icon-48.png",
+    "128": "public/icons/icon-128.png"
+  },
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "default_title": "NovoMCP",
+    "default_icon": {
+      "16": "public/icons/icon-16.png",
+      "32": "public/icons/icon-32.png",
+      "48": "public/icons/icon-48.png",
+      "128": "public/icons/icon-128.png"
+    }
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.ts",
+    "type": "module"
+  },
+  "side_panel": {
+    "default_path": "src/sidepanel/index.html"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "sidePanel"
+  ],
+  "host_permissions": [
+    "http://localhost/*",
+    "http://127.0.0.1/*",
+    "https://localhost/*",
+    "https://api.novomcp.com/*",
+    "https://novomcp.com/*",
+    "https://app.novomcp.com/*",
+    "https://ai.novomcp.com/*",
+    "https://compute.novomcp.com/*",
+    "https://pubchem.ncbi.nlm.nih.gov/*",
+    "https://www.ebi.ac.uk/chembl/*",
+    "https://www.biorxiv.org/*",
+    "https://www.medrxiv.org/*",
+    "https://arxiv.org/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://novomcp.com/*",
+        "https://app.novomcp.com/*",
+        "https://pubchem.ncbi.nlm.nih.gov/*",
+        "https://www.ebi.ac.uk/chembl/*",
+        "https://www.biorxiv.org/*",
+        "https://www.medrxiv.org/*",
+        "https://arxiv.org/*"
+      ],
+      "js": ["src/content/content-script.ts"],
+      "run_at": "document_idle"
+    }
+  ]
+}

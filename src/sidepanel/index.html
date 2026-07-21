@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>NovoMCP</title>
+    <link rel="stylesheet" href="../popup/popup.css" />
+    <style>
+      body { max-width: none; min-width: 280px; overflow-x: hidden; }
+      /* Horizontal-overflow defense: any grid/flex child that wraps a long
+         token (SMILES, recommendations text, JSON dumps) needs min-width:0
+         + overflow-wrap so the side panel never scrolls horizontally. */
+      dl.props-grid { grid-template-columns: minmax(0, max-content) minmax(0, 1fr); }
+      dl.props-grid dt, dl.props-grid dd { min-width: 0; overflow-wrap: anywhere; word-break: break-word; }
+      dl.props-grid dd pre { white-space: pre-wrap; word-break: break-word; max-width: 100%; margin: 0; }
+      main { gap: 14px; padding-bottom: 60px; }
+
+      .empty {
+        padding: 24px 0;
+        color: var(--text-soft);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+      .empty .display {
+        font-family: var(--serif);
+        font-size: 18px;
+        color: var(--text);
+        font-weight: 500;
+        margin-bottom: 8px;
+      }
+      .empty ul { margin: 12px 0 0 0; padding: 0; list-style: none; font-size: 12px; }
+      .empty li { padding: 6px 0; border-bottom: 1px solid var(--border); }
+      .empty li:last-child { border-bottom: 0; }
+
+      .smiles-block {
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+        font-size: 11px;
+        color: var(--text-soft);
+        word-break: break-all;
+        padding: 8px 10px;
+        background: var(--bg-warm);
+        border-left: 2px solid var(--accent);
+      }
+
+      /* — Tabs — */
+      .tabs {
+        display: flex;
+        gap: 0;
+        border-bottom: 1px solid var(--border);
+        margin: 0 -18px;
+        padding: 0 18px;
+        overflow-x: auto;
+        /* Japandi scrollbar — thin, warm-neutral, no chrome system styling */
+        scrollbar-width: thin;
+        scrollbar-color: var(--border) transparent;
+      }
+      .tabs::-webkit-scrollbar {
+        height: 4px;
+      }
+      .tabs::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .tabs::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 0;
+      }
+      .tabs::-webkit-scrollbar-thumb:hover {
+        background: var(--text-muted);
+      }
+      .tab {
+        background: transparent;
+        border: 0;
+        margin: 0;
+        padding: 10px 12px;
+        font: inherit;
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        white-space: nowrap;
+      }
+      .tab[aria-selected="true"] {
+        color: var(--text);
+        border-bottom-color: var(--accent);
+      }
+      .tab:hover { color: var(--text); }
+      .tab[disabled] { color: var(--text-muted); cursor: not-allowed; opacity: 0.5; }
+      .tab .lock {
+        display: inline-block;
+        margin-left: 4px;
+        font-size: 9px;
+        opacity: 0.7;
+      }
+
+      .tab-panel { display: none; }
+      .tab-panel.active { display: block; animation: fadeIn 120ms ease; }
+      @keyframes fadeIn { from { opacity: 0.5; } to { opacity: 1; } }
+
+      .section { margin-top: 4px; }
+      .section h3 {
+        margin: 0 0 6px 0;
+        font-family: var(--serif);
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text);
+        letter-spacing: -0.005em;
+      }
+
+      .props-grid {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 4px 12px;
+        font-size: 12px;
+      }
+      .props-grid dt {
+        color: var(--text-muted);
+        font-size: 10px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        align-self: center;
+      }
+      .props-grid dd {
+        margin: 0;
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 1px 6px;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        background: var(--bg-warm);
+        color: var(--text-soft);
+      }
+      .badge.ok   { background: #E5EFE5; color: var(--success); }
+      .badge.warn { background: #FBF0E0; color: var(--accent); }
+      .badge.err  { background: #FBECEC; color: var(--error); }
+      @media (prefers-color-scheme: dark) {
+        .badge.ok   { background: #2A3A2F; color: var(--success); }
+        .badge.warn { background: #3A2D20; color: var(--accent); }
+        .badge.err  { background: #2E1A1A; color: var(--error); }
+      }
+
+      .meta {
+        margin-top: 12px;
+        font-size: 11px;
+        color: var(--text-muted);
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .loading-skeleton {
+        height: 14px;
+        background: var(--border);
+        animation: pulse 1.4s infinite ease-in-out;
+        margin: 4px 0;
+      }
+      @keyframes pulse { 0%,100% { opacity: 0.55; } 50% { opacity: 0.85; } }
+
+      .error-block {
+        padding: 10px 12px;
+        border-left: 2px solid var(--error);
+        background: var(--error-bg, #FBECEC);
+        color: var(--error);
+        font-size: 12px;
+      }
+      @media (prefers-color-scheme: dark) {
+        .error-block { background: #2E1A1A; }
+      }
+
+      /* — Advanced tab — Compute calls — */
+      .compute-card {
+        margin-top: 10px;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        background: var(--card);
+      }
+      .compute-card .head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        margin-bottom: 6px;
+      }
+      .compute-card .head .name {
+        font-family: var(--serif);
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .compute-card button {
+        font: inherit;
+        font-size: 11px;
+        padding: 4px 10px;
+        margin: 0;
+        border: 1px solid var(--accent);
+        background: var(--accent);
+        color: var(--accent-fg);
+        cursor: pointer;
+        border-radius: 0;
+      }
+      .compute-card button.secondary {
+        background: transparent;
+        color: var(--text);
+        border-color: var(--border);
+      }
+      .compute-card button:disabled { opacity: 0.5; cursor: not-allowed; }
+      .compute-card .body { font-size: 12px; color: var(--text-soft); }
+      .compute-card .body .hint { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+
+      /* — ADMET stacked-row layout: full label on top, metric below — */
+      .admet-divider {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 18px 0 10px 0;
+      }
+      .admet-divider:first-child { margin-top: 6px; }
+      .admet-divider-letter {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px; height: 18px;
+        background: var(--accent);
+        color: var(--accent-fg);
+        font-family: var(--serif);
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+      .admet-divider-label {
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text);
+        font-weight: 500;
+      }
+      .admet-divider-count {
+        font-size: 10px;
+        color: var(--text-muted);
+        font-variant-numeric: tabular-nums;
+      }
+      .admet-divider-line {
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+      .admet-field {
+        margin: 0 0 10px 0;
+      }
+      .admet-field-title {
+        font-size: 12px;
+        color: var(--text);
+        margin-bottom: 4px;
+        word-break: break-word;
+      }
+      .admet-field-metric {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+      .admet-field-metric .bar-track {
+        flex: 1;
+        min-width: 0;
+        height: 4px;
+        background: var(--border);
+        position: relative;
+        overflow: hidden;
+      }
+      .admet-field-metric .bar-fill {
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        transition: width 200ms cubic-bezier(0.25, 0.1, 0.25, 1);
+      }
+      .admet-field-metric .bar-num {
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        min-width: 38px;
+        text-align: right;
+      }
+      .admet-field-metric .bar-num-wide {
+        flex: 1;
+        text-align: left;
+      }
+      .admet-field-metric .admet-class {
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 1px 6px;
+        border: 1px solid;
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      /* — Compliance — */
+      .compliance-verdict {
+        margin-top: 6px;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+      }
+      .compliance-block {
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--text-soft);
+        padding: 8px 10px;
+        background: var(--bg-warm);
+        border-left: 2px solid var(--accent);
+      }
+      .compliance-recs {
+        margin: 0;
+        padding-left: 16px;
+        font-size: 12px;
+        color: var(--text-soft);
+        line-height: 1.5;
+      }
+      .compliance-recs li { padding: 2px 0; }
+      .faves-dims {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .faves-dim {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 8px 10px;
+        background: var(--bg-warm);
+        border: 1px solid var(--border);
+        font-size: 12px;
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .faves-dim .faves-name {
+        color: var(--text);
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        flex: 1;
+        min-width: 0;
+        line-height: 1.45;
+      }
+      .faves-dim .badge { flex-shrink: 0; align-self: flex-start; }
+      .compliance-block, .compliance-block * {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        max-width: 100%;
+      }
+      /* Nested object arrays in compliance (e.g. risk_factors) — render
+         each element as a small inset card instead of joining as
+         "[object Object]". */
+      .kv-array {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        width: 100%;
+      }
+      .kv-array-item {
+        padding: 6px 8px;
+        background: var(--card);
+        border-left: 2px solid var(--border);
+        font-size: 11px;
+      }
+      .kv-array-item dl.props-grid {
+        font-size: 11px;
+        gap: 2px 10px;
+      }
+      .compliance-recs { width: 100%; box-sizing: border-box; }
+      .compliance-recs li { overflow-wrap: anywhere; word-break: break-word; }
+      /* Make every direct child of the Compliance tab full-width and
+         box-sized so nothing leaks horizontally. */
+      #panel-compliance > * { max-width: 100%; box-sizing: border-box; }
+      #panel-compliance dl.props-grid { width: 100%; }
+      #panel-compliance dl.props-grid dd { overflow-wrap: anywhere; word-break: break-word; }
+
+      .similar-thresh {
+        font: inherit;
+        font-size: 11px;
+        padding: 2px 8px;
+        margin: 0 2px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text-soft);
+        cursor: pointer;
+        border-radius: 0;
+      }
+      .similar-thresh.active {
+        border-color: var(--accent);
+        color: var(--accent);
+        font-weight: 500;
+      }
+      .similar-thresh:hover { color: var(--text); }
+
+      .similar-row {
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        margin-bottom: 6px;
+        cursor: pointer;
+        transition: border-color 120ms;
+      }
+      .similar-row:hover { border-color: var(--accent); }
+      .similar-head {
+        display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+        margin-bottom: 4px;
+      }
+      .similar-head .cid { font-size: 11px; color: var(--accent); margin-left: auto; }
+      .similar-smiles {
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+        font-size: 11px;
+        color: var(--text-soft);
+        word-break: break-all;
+        line-height: 1.4;
+      }
+      .similar-meta {
+        margin-top: 4px;
+        font-size: 11px;
+        color: var(--text-muted);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .gate-locked {
+        padding: 14px 12px;
+        background: var(--bg-warm);
+        border: 1px dashed var(--border);
+        font-size: 12px;
+        color: var(--text-soft);
+      }
+      .gate-locked .display {
+        font-family: var(--serif);
+        font-size: 15px;
+        color: var(--text);
+        margin-bottom: 4px;
+      }
+
+      /* — Footer CTAs — */
+      .cross-surface {
+        margin-top: 10px;
+        padding: 10px 0 0 0;
+        border-top: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .cross-surface .label {
+        font-size: 10px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      .cross-surface a, .cross-surface button {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        text-decoration: none;
+        padding: 8px 10px;
+        background: var(--bg-warm);
+        color: var(--text);
+        font-size: 12px;
+        border: 1px solid var(--border);
+        cursor: pointer;
+        font-family: inherit;
+        margin: 0;
+        border-radius: 0;
+      }
+      .cross-surface a:hover, .cross-surface button:hover {
+        border-color: var(--accent);
+      }
+      .cross-surface button.copied {
+        border-color: var(--success);
+        color: var(--success);
+      }
+      .cross-surface .arrow { color: var(--text-muted); }
+      .cross-surface .copied .arrow { color: var(--success); }
+      .cross-surface .funnel-id {
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+        font-size: 10px;
+        color: var(--text-muted);
+        margin-top: 2px;
+        word-break: break-all;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="brand">
+        <img src="../../public/icons/icon-32.png" alt="" class="logo" width="28" height="28" />
+        <div class="brand-text">
+          <h1>NovoMCP</h1>
+          <p class="tagline">Drug discovery &amp; materials science.</p>
+        </div>
+      </header>
+
+      <section id="state-empty" class="empty">
+        <div class="display">Select a molecule on the page.</div>
+        <p>Hover or click an underlined SMILES on PubChem, ChEMBL, a preprint, or a NovoMCP page to load its profile here.</p>
+        <ul>
+          <li><strong>Profile</strong> — properties, ADMET, structural alerts</li>
+          <li><strong>Compliance</strong> — controlled-substance &amp; FAVES checks</li>
+          <li><strong>Similar</strong> — chemical-space neighbors</li>
+          <li><strong>Advanced</strong> — pKa, solubility, BDE, frontier orbitals (Compute tier)</li>
+        </ul>
+      </section>
+
+      <section id="state-loading" hidden>
+        <div class="smiles-block" id="loading-smiles"></div>
+        <div class="section">
+          <h3>Profile</h3>
+          <div class="loading-skeleton"></div>
+          <div class="loading-skeleton" style="width: 75%;"></div>
+          <div class="loading-skeleton" style="width: 60%;"></div>
+        </div>
+      </section>
+
+      <section id="state-error" hidden>
+        <div class="smiles-block" id="error-smiles"></div>
+        <div class="error-block" id="error-body" role="alert"></div>
+      </section>
+
+      <section id="state-profile" hidden>
+        <div class="smiles-block" id="profile-smiles"></div>
+
+        <div class="tabs" role="tablist">
+          <button class="tab" data-tab="profile" role="tab" aria-selected="true">Profile</button>
+          <button class="tab" data-tab="admet" role="tab" aria-selected="false">ADMET</button>
+          <button class="tab" data-tab="compliance" role="tab" aria-selected="false">Compliance</button>
+          <button class="tab" data-tab="similar" role="tab" aria-selected="false">Similar</button>
+          <button class="tab" data-tab="advanced" role="tab" aria-selected="false">Advanced<span class="lock" id="advanced-lock" hidden>🔒</span></button>
+        </div>
+
+        <div class="tab-panel active" id="panel-profile" role="tabpanel">
+          <dl class="props-grid" id="profile-properties"></dl>
+        </div>
+
+        <div class="tab-panel" id="panel-admet" role="tabpanel">
+          <!--
+            Plain div, NOT dl.props-grid. paintAdmet() appends
+            section dividers + per-field stacked rows; if this were a dl
+            with display:grid, those children would be flowed into a
+            two-column grid (heading on left, content on right) and
+            section headings would clip at the panel edge.
+          -->
+          <div id="profile-admet"></div>
+        </div>
+
+        <div class="tab-panel" id="panel-compliance" role="tabpanel">
+          <!-- Same reason as #profile-admet — paintCompliance appends
+               heading + content pairs that need a normal block flow. -->
+          <div id="profile-compliance"></div>
+        </div>
+
+        <div class="tab-panel" id="panel-similar" role="tabpanel">
+          <div id="similar-controls" style="margin-top: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <button type="button" id="similar-run" style="margin-top: 0;">Search neighbors</button>
+            <span class="muted" style="font-size: 11px;">Search 100M+ molecules · 5 credits</span>
+          </div>
+          <div style="margin-top: 6px; font-size: 11px; color: var(--text-muted);">
+            Threshold:
+            <button type="button" data-similar-threshold="0.7" class="similar-thresh active">0.7</button>
+            <button type="button" data-similar-threshold="0.5" class="similar-thresh">0.5</button>
+            <button type="button" data-similar-threshold="0.3" class="similar-thresh">0.3</button>
+          </div>
+          <div id="similar-results" style="margin-top: 12px;"></div>
+        </div>
+
+        <div class="tab-panel" id="panel-advanced" role="tabpanel">
+          <div id="advanced-locked" class="gate-locked" hidden>
+            <div class="display">Compute tier required</div>
+            <p>Add an <code>ncmcp_</code> Compute key in the popup to unlock pKa, solubility, BDE, and frontier-orbital predictions for the current molecule.</p>
+            <p style="margin-top: 6px; font-size: 11px;">Long-running jobs (MD, FEP) initiate from any AI assistant connected to NovoMCP and stay on the same funnel; results land in your dashboard's audit log.</p>
+          </div>
+          <div id="advanced-tools" hidden>
+            <p class="muted" style="font-size: 11px; margin-bottom: 4px;">Sync compute against the current molecule. Each call lands on this funnel and is visible across surfaces.</p>
+            <div class="compute-card" data-tool="predict_pka">
+              <div class="head"><span class="name">pKa</span><button data-action="run">Run</button></div>
+              <div class="body" data-result>Click run to predict ionization sites and pKa values.</div>
+            </div>
+            <div class="compute-card" data-tool="predict_solubility">
+              <div class="head"><span class="name">Solubility</span><button data-action="run">Run</button></div>
+              <div class="body" data-result>Aqueous solubility (logS) with class label.</div>
+            </div>
+            <div class="compute-card" data-tool="predict_bde">
+              <div class="head"><span class="name">Bond dissociation</span><button data-action="run">Run</button></div>
+              <div class="body" data-result>BDE per bond — flag the weakest links.</div>
+            </div>
+            <div class="compute-card" data-tool="predict_frontier_orbitals">
+              <div class="head"><span class="name">Frontier orbitals</span><button data-action="run">Run</button></div>
+              <div class="body" data-result>HOMO, LUMO, and gap (eV).</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="meta" id="profile-meta"></div>
+
+        <div class="cross-surface" id="cross-surface" hidden>
+          <div class="label">This funnel across surfaces</div>
+          <a id="cta-dashboard" href="#" target="_blank" rel="noopener">
+            <span>Preview audit log on app.novomcp.com</span>
+            <span class="arrow">→</span>
+          </a>
+          <button id="cta-ai-assistant" type="button">
+            <span id="cta-ai-label">Copy prompt to continue in any AI assistant</span>
+            <span class="arrow" id="cta-ai-arrow">⧉</span>
+          </button>
+          <div class="funnel-id" id="cta-funnel-id"></div>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="./sidepanel.ts"></script>
+  </body>
+</html>

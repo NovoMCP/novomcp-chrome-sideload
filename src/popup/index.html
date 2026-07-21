@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NovoMCP</title>
+    <link rel="stylesheet" href="./popup.css" />
+  </head>
+  <body>
+    <main id="app">
+      <header class="brand">
+        <img src="../../public/icons/icon-32.png" alt="" class="logo" width="28" height="28" />
+        <div class="brand-text">
+          <h1>NovoMCP</h1>
+          <p class="tagline">Drug discovery &amp; materials science, in your browser.</p>
+        </div>
+      </header>
+
+      <section id="state-loading" hidden>
+        <p class="muted">Checking connection…</p>
+      </section>
+
+      <section id="state-onboarding" hidden>
+        <h2>Connect to your engine</h2>
+        <p class="muted">
+          Point at a local NovoMCP engine or a self-hosted deployment. See <a href="https://github.com/novomcp/novomcp" target="_blank" rel="noopener">novomcp/novomcp</a> to run one.
+        </p>
+        <form id="onboarding-form">
+          <label for="api-base">Engine URL</label>
+          <input
+            id="api-base"
+            type="url"
+            autocomplete="off"
+            spellcheck="false"
+            value="http://localhost:8018"
+            placeholder="http://localhost:8018"
+            aria-describedby="api-base-hint"
+          />
+          <small id="api-base-hint" class="muted">
+            Defaults to <code>http://localhost:8018</code>. Use your engine's URL if self-hosted, or <code>https://api.novomcp.com</code> to use the hosted service.
+          </small>
+
+          <label for="novo-key">API key <span class="muted">(optional for local engines)</span></label>
+          <input
+            id="novo-key"
+            type="password"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="Leave blank for local engine"
+            aria-describedby="novo-key-hint"
+          />
+          <small id="novo-key-hint" class="muted">
+            Only needed when pointing at a hosted engine that requires authentication. Local single-user mode (<code>LocalAuthGate</code>) accepts any value.
+          </small>
+
+          <button type="submit" id="connect-btn">Connect</button>
+          <p id="error-msg" class="error" role="alert" hidden></p>
+        </form>
+      </section>
+
+      <section id="state-connected" hidden>
+        <h2>Connected</h2>
+        <dl class="user-info">
+          <dt>Engine</dt><dd id="user-engine"></dd>
+          <dt>Mode</dt><dd id="user-mode"></dd>
+        </dl>
+
+        <div class="actions">
+          <button id="open-sidebar-btn" type="button">Open sidebar</button>
+          <button id="signout-btn" type="button" class="secondary">Disconnect</button>
+        </div>
+      </section>
+
+      <footer>
+        <a href="https://github.com/novomcp/novomcp" target="_blank" rel="noopener">Engine</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://github.com/novomcp/novomcp-chrome-sideload" target="_blank" rel="noopener">Extension source</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://github.com/novomcp/novomcp/tree/main/docs" target="_blank" rel="noopener">Docs</a>
+      </footer>
+    </main>
+
+    <script type="module" src="./popup.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "novomcp-chrome-sideload",
+  "version": "0.1.0",
+  "description": "NovoMCP Chrome extension (sideload) — configurable engine URL, unpacked distribution. ADMET / compliance / drug-likeness on any molecule you read about online.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "package": "npm run build && cd dist && zip -r ../novomcp-chrome-sideload.zip ."
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.0.0-beta.25",
+    "@types/chrome": "^0.0.268",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11"
+  }
+}

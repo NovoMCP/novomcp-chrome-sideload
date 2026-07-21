@@ -1,0 +1,25 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+.env
+.env.local
+.env.*.local
+
+# Extension signing key — NEVER commit. The public key derived from this
+# is embedded in manifest.json (`key` field) which IS safe to commit.
+# Private key is only needed if we ever side-load .crx outside the Web Store.
+extension-key.pem
+pubkey.der
+pubkey.b64.txt
+.extension-id
+
+# Build artifacts
+*.crx
+# Submission zip is a build artifact — generated via `npm run package`.
+# Tracked release versions go to GitHub Releases, not the repo tree.
+novomcp-chrome-extension*.zip
+
+# Editor
+.vscode/
+.idea/

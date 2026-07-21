@@ -1,0 +1,278 @@
+/*
+ * Japandi design system, ported from frontend-nextjs/app/globals.css.
+ * Warm neutrals, terracotta accent, sharp corners (radius: 0), Cormorant
+ * Garamond for display copy + Inter for UI text. Light + dark via
+ * prefers-color-scheme — Chrome popups inherit the host page's scheme,
+ * which means a dark-themed novomcp.com gets dark popup, light pages get light.
+ */
+
+:root {
+  --bg: #F8F6F3;
+  --bg-warm: #F3F0EB;
+  --card: #FFFFFF;
+  --text: #2D2A26;
+  --text-soft: #6B6560;
+  --text-muted: #9C9690;
+  --accent: #B8704B;
+  --accent-fg: #FFFFFF;
+  --border: #E8E4DE;
+  --error: #C53030;
+  --error-bg: #FBECEC;
+  --success: #4A7C59;
+  --radius: 0px;
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1C1A17;
+    --bg-warm: #242120;
+    --card: #242120;
+    --text: #E8E4DE;
+    --text-soft: #A39E98;
+    --text-muted: #706B65;
+    --accent: #C9845E;
+    --accent-fg: #1C1A17;
+    --border: #3A3632;
+    --error: #D65454;
+    --error-bg: #2E1A1A;
+    --success: #5E9E6E;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body { min-width: 340px; max-width: 360px; }
+
+main {
+  padding: 18px 18px 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* — Brand header — */
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.brand .logo {
+  display: block;
+  flex-shrink: 0;
+  border-radius: 0;
+}
+.brand-text { display: flex; flex-direction: column; gap: 2px; }
+.brand h1 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  color: var(--text);
+}
+.tagline {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.005em;
+}
+
+/* — Sections — */
+
+h2 {
+  margin: 0 0 6px 0;
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--text);
+}
+
+p { margin: 0; }
+.muted, small.muted {
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 120ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+a:hover { border-bottom-color: var(--accent); }
+
+/* — Form — */
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+label {
+  display: block;
+  margin: 10px 0 4px 0;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+input[type="password"], input[type="text"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+}
+input::placeholder { color: var(--text-muted); }
+input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+
+details {
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+details summary {
+  cursor: pointer;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  list-style: none;
+  user-select: none;
+}
+details summary::-webkit-details-marker { display: none; }
+details summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 6px;
+  transition: transform 120ms;
+}
+details[open] summary::before { transform: rotate(90deg); }
+
+/* — Buttons — */
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+button {
+  padding: 10px 16px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--accent-fg);
+  font: inherit;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: filter 120ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+button:hover { filter: brightness(1.04); }
+button:active { filter: brightness(0.96); }
+button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+button.secondary {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+button.secondary:hover {
+  border-color: var(--text-soft);
+  filter: none;
+}
+
+/* — Connected state info — */
+
+dl.user-info {
+  margin: 4px 0 12px 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 14px;
+  font-size: 13px;
+}
+dl.user-info dt {
+  color: var(--text-soft);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  align-self: center;
+}
+dl.user-info dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  word-break: break-all;
+  color: var(--text);
+}
+
+/* — Error state — */
+
+.error {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-left: 2px solid var(--error);
+  background: var(--error-bg);
+  color: var(--error);
+  font-size: 12px;
+  border-radius: 0;
+}
+
+.badge {
+  display: inline-block;
+  padding: 1px 7px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--bg-warm);
+  color: var(--text-soft);
+  border: 1px solid var(--border);
+}
+.badge.ok { background: transparent; color: var(--success); border-color: color-mix(in srgb, var(--success) 40%, transparent); }
+.badge.warn { background: transparent; color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+.badge.err { background: transparent; color: var(--error); border-color: color-mix(in srgb, var(--error) 40%, transparent); }
+
+/* — Footer — */
+
+footer {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+footer a { color: var(--text-muted); }
+footer a:hover { color: var(--text-soft); border-bottom-color: var(--text-soft); }
