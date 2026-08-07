@@ -1,8 +1,8 @@
 /**
  * Funnel ID tracking — the substrate hook for cross-surface continuity.
  *
- * Every API response from /mcp/tools/{name} carries `usage.funnel_id` (server
- * change shipped commit d82e587f). We capture the latest one and persist it
+ * Every API response from /mcp/tools/{name} carries `usage.funnel_id`. We
+ * capture the latest one and persist it
  * in chrome.storage.session so it survives across popup → sidepanel → content
  * script within the same browsing session, but doesn't leak across sessions.
  *
@@ -46,7 +46,7 @@ export function dashboardUrl(funnelId: string): string {
 /**
  * Continue in Claude — there's no deep-link receiver in Claude.ai, so we
  * give the user a copy-to-clipboard prompt template instead. They paste it
- * into a new Claude conversation, NovoMCP-side `load_session` (Phase 2)
+ * into a new Claude conversation, NovoMCP-side `load_session`
  * picks up the funnel_id and threads the prior audit forward.
  */
 export function claudeHandoffPrompt(funnelId: string, smiles?: string): string {

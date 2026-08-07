@@ -896,8 +896,7 @@ async function renderCrossSurface(smiles: string): Promise<void> {
     try {
       const text = claudeHandoffPrompt(funnelId, smiles);
       await navigator.clipboard.writeText(text);
-      // Visible feedback — change the button label and styling for 2s,
-      // matching the pattern in app.novomcp.com/jobs:226.
+      // Visible feedback — change the button label and styling for 2s.
       const label = $<HTMLElement>('cta-ai-label');
       const arrow = $<HTMLElement>('cta-ai-arrow');
       const originalLabel = label.textContent;

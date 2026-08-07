@@ -70,9 +70,9 @@ const REGISTRY: FieldDef[] = [
   { canonical: 'hepatotoxicity', label: 'Hepatotoxicity', category: 'toxicity', classify: probLowHigh, aliases: ['hepatotoxicity_probability', 'hepatotoxicity'], higherIsBetter: false },
   { canonical: 'ames', label: 'Ames Mutagenicity', category: 'toxicity', classify: probLowHigh, aliases: ['ames_mutagenicity_probability', 'ames_mutagenicity', 'ames'], higherIsBetter: false },
   { canonical: 'carcinogenicity', label: 'Carcinogenicity', category: 'toxicity', classify: probLowHigh, aliases: ['carcinogenicity_probability', 'carcinogenicity'], higherIsBetter: false },
-  // Cardiotoxicity now keyed on the validated DICTrank head `cardiotoxicity_dict`
-  // (quanta-mcp PR #173 pruned the legacy cardiotoxicity_max/5d/10d). Legacy
-  // max aliases retained as fallback so cached/older-backend responses still render.
+  // Cardiotoxicity keyed on the validated DICTrank head `cardiotoxicity_dict`.
+  // Legacy `cardiotoxicity_max` aliases retained as a fallback so cached or
+  // older-backend responses still render.
   { canonical: 'cardiotoxicity_dict', label: 'Cardiotoxicity', category: 'toxicity', classify: probLowHigh, aliases: ['cardiotoxicity_dict', 'cardiotoxicity_dict_probability', 'cardiotoxicity', 'cardiotoxicity_max_probability', 'cardiotoxicity_max'], higherIsBetter: false },
   { canonical: 'clinical_toxicity', label: 'Clinical Toxicity', category: 'toxicity', classify: probLowHigh, aliases: ['clinical_toxicity_probability', 'clinical_toxicity'], higherIsBetter: false },
   { canonical: 'developmental_toxicity', label: 'Developmental Toxicity', category: 'toxicity', classify: probLowHigh, aliases: ['developmental_toxicity_probability', 'developmental_toxicity'], higherIsBetter: false },
