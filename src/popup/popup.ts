@@ -98,17 +98,9 @@ async function handleConnect(event: Event): Promise<void> {
   }
 
   const local = isLocalEngineUrl(apiBase);
-  // Only enforce nmcp_ prefix for hosted engines. Local engines accept
-  // any bearer token via LocalAuthGate — including blank (we substitute
-  // 'local-dev' below).
-  if (!local && novoKey && !novoKey.startsWith('nmcp_')) {
-    showError('For hosted engines the API key must start with nmcp_. Get one at app.novomcp.com/keys, or use a local engine URL.');
-    return;
-  }
-  if (!local && !novoKey) {
-    showError('Hosted engines require an API key. Add one, or point at a local engine URL.');
-    return;
-  }
+  // The API key is optional. A self-hosted engine accepts any bearer token via
+  // LocalAuthGate — including blank (we substitute 'local-dev' below). Supply a
+  // key only if you point at an engine that requires auth (e.g. a FAVES service).
 
   const btn = $<HTMLButtonElement>('connect-btn');
   btn.disabled = true;

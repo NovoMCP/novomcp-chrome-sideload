@@ -19,7 +19,7 @@ import type {
 } from '../lib/messages';
 import { normalize as normalizeAdmet, classificationColor, type AdmetCategory } from '../lib/admet';
 import { auth } from '../lib/storage';
-import { getCurrentFunnelId, dashboardUrl, claudeHandoffPrompt } from '../lib/funnel';
+import { getCurrentFunnelId, claudeHandoffPrompt } from '../lib/funnel';
 import type { ApiResponse, MoleculeProfile } from '../types';
 
 type StateName = 'empty' | 'loading' | 'profile' | 'error';
@@ -172,13 +172,9 @@ function renderProfile(smiles: string, response: ApiResponse<MoleculeProfile>): 
   }
 
   // Footer meta
-  const cost = response.usage?.credits ?? 0;
-  const remaining = response.usage?.credits_remaining;
   const meta = $<HTMLElement>('profile-meta');
   meta.innerHTML = '';
   meta.appendChild(metaPill(p.in_database ? 'cached profile' : 'computed on demand'));
-  meta.appendChild(metaPill(cost === 0 ? 'free lookup' : `${cost} credit${cost === 1 ? '' : 's'}`));
-  if (typeof remaining === 'number') meta.appendChild(metaPill(`${Math.floor(remaining).toLocaleString()} credits left`));
 
   void renderAdvancedGate();
   void renderCrossSurface(smiles);
@@ -636,8 +632,8 @@ function friendlyComputeError(tool: ComputeTool, raw: string): string {
   // Tone-of-message based on HTTP class
   if (status && status >= 500) return `${label} service is temporarily unavailable. Try again in a moment.`;
   if (status === 422 || status === 400) return `${label} couldn't process this molecule. Try a different scaffold.`;
-  if (status === 401) return `${label} requires a valid Compute (ncmcp_) key. Add or update it from the popup.`;
-  if (status === 402) return `${label} needs more credits. Upgrade or wait for the next billing cycle.`;
+  if (status === 401) return `${label} requires authentication — add an API key in the popup if your engine needs one.`;
+  if (status === 402) return `${label} isn't available on this engine — wire the compute service (see docs/deploying-services).`;
   if (status === 429) return `${label} is rate-limited right now. Try again shortly.`;
 
   // Fallback: trim the raw to something readable
@@ -889,7 +885,7 @@ async function renderCrossSurface(smiles: string): Promise<void> {
   wrap.hidden = false;
 
   const dashLink = $<HTMLAnchorElement>('cta-dashboard');
-  dashLink.href = dashboardUrl(funnelId);
+  dashLink.hidden = true; // hosted dashboard retired; OSS uses the funnel_id / AI handoff below
 
   const aiBtn = $<HTMLButtonElement>('cta-ai-assistant');
   aiBtn.onclick = async () => {

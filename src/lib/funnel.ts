@@ -38,11 +38,6 @@ export async function clearFunnelId(): Promise<void> {
   try { await sessionStorage.remove(STORAGE_KEY); } catch { /* noop */ }
 }
 
-/** Dashboard URL with the funnel pre-selected and auto-expanded. */
-export function dashboardUrl(funnelId: string): string {
-  return `https://app.novomcp.com/audit/pipelines?funnel_id=${encodeURIComponent(funnelId)}`;
-}
-
 /**
  * Continue in Claude — there's no deep-link receiver in Claude.ai, so we
  * give the user a copy-to-clipboard prompt template instead. They paste it
