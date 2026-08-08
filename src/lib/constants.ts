@@ -20,9 +20,9 @@ export const SURFACE_TAG = 'chrome-ext-sideload-v1';
 export const UA_PREFIX = 'NovoMCP-ChromeExt-Sideload/0.1.0';
 
 // Default engine URL — used when the user hasn't set a custom one.
-// Points at the hosted API so nmcp_* keys work out of the box; users
-// running OSS locally point at http://localhost:8018.
-export const API_BASE_DEFAULT = 'https://api.novomcp.com';
+// Defaults to a local self-hosted engine; point at a hosted engine (with a
+// key) via the settings UI if you prefer.
+export const API_BASE_DEFAULT = 'http://localhost:8018';
 
 // Backwards-compat alias for callers that still import API_BASE directly.
 // New code should call getApiBase() so runtime settings take effect.

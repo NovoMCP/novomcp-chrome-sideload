@@ -562,7 +562,7 @@
         <div class="tab-panel" id="panel-similar" role="tabpanel">
           <div id="similar-controls" style="margin-top: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <button type="button" id="similar-run" style="margin-top: 0;">Search neighbors</button>
-            <span class="muted" style="font-size: 11px;">Search 100M+ molecules · 5 credits</span>
+            <span class="muted" style="font-size: 11px;">Search structurally similar molecules</span>
           </div>
           <div style="margin-top: 6px; font-size: 11px; color: var(--text-muted);">
             Threshold:
@@ -576,7 +576,7 @@
         <div class="tab-panel" id="panel-advanced" role="tabpanel">
           <div id="advanced-locked" class="gate-locked" hidden>
             <div class="display">Compute tier required</div>
-            <p>Add an <code>ncmcp_</code> Compute key in the popup to unlock pKa, solubility, BDE, and frontier-orbital predictions for the current molecule.</p>
+            <p>Wire the QM/NNP compute service on your engine to enable pKa, solubility, BDE, and frontier-orbital predictions. See docs/deploying-services.</p>
             <p style="margin-top: 6px; font-size: 11px;">Long-running jobs (MD, FEP) initiate from any AI assistant connected to NovoMCP and stay on the same funnel; results land in your dashboard's audit log.</p>
           </div>
           <div id="advanced-tools" hidden>
@@ -605,7 +605,7 @@
         <div class="cross-surface" id="cross-surface" hidden>
           <div class="label">This funnel across surfaces</div>
           <a id="cta-dashboard" href="#" target="_blank" rel="noopener">
-            <span>Preview audit log on app.novomcp.com</span>
+            <span>Open the funnel audit on your engine</span>
             <span class="arrow">→</span>
           </a>
           <button id="cta-ai-assistant" type="button">
