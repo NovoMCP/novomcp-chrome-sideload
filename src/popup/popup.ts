@@ -100,7 +100,7 @@ async function handleConnect(event: Event): Promise<void> {
   const local = isLocalEngineUrl(apiBase);
   // The API key is optional. A self-hosted engine accepts any bearer token via
   // LocalAuthGate — including blank (we substitute 'local-dev' below). Supply a
-  // key only if you point at an engine that requires auth (e.g. a FAVES service).
+  // key only if you point at an engine that requires auth (e.g. a compliance service).
 
   const btn = $<HTMLButtonElement>('connect-btn');
   btn.disabled = true;

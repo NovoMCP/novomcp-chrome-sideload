@@ -324,12 +324,12 @@
         line-height: 1.5;
       }
       .compliance-recs li { padding: 2px 0; }
-      .faves-dims {
+      .compliance-dims {
         display: flex;
         flex-direction: column;
         gap: 4px;
       }
-      .faves-dim {
+      .compliance-dim {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
@@ -342,7 +342,7 @@
         width: 100%;
         box-sizing: border-box;
       }
-      .faves-dim .faves-name {
+      .compliance-dim .compliance-name {
         color: var(--text);
         overflow-wrap: anywhere;
         word-break: break-word;
@@ -350,7 +350,7 @@
         min-width: 0;
         line-height: 1.45;
       }
-      .faves-dim .badge { flex-shrink: 0; align-self: flex-start; }
+      .compliance-dim .badge { flex-shrink: 0; align-self: flex-start; }
       .compliance-block, .compliance-block * {
         overflow-wrap: anywhere;
         word-break: break-word;
@@ -506,7 +506,7 @@
         <p>Hover or click an underlined SMILES on PubChem, ChEMBL, a preprint, or a NovoMCP page to load its profile here.</p>
         <ul>
           <li><strong>Profile</strong> — properties, ADMET, structural alerts</li>
-          <li><strong>Compliance</strong> — controlled-substance &amp; FAVES checks</li>
+          <li><strong>Compliance</strong> — controlled-substance &amp; compliance checks</li>
           <li><strong>Similar</strong> — chemical-space neighbors</li>
           <li><strong>Advanced</strong> — pKa, solubility, BDE, frontier orbitals (Compute tier)</li>
         </ul>

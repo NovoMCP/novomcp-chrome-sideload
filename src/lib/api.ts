@@ -176,7 +176,7 @@ export async function predictAdmet(smiles: string): Promise<ApiResponse<Record<s
 }
 
 /**
- * Deep compliance / FAVES contextual evaluation. The MCP tool
+ * Deep contextual compliance evaluation. The MCP tool
  * `check_compliance` requires `intended_use` + `jurisdiction`; we use the
  * NovoWorkbench defaults (pharmaceutical / US) which match the most
  * common research-context lens. Returns base_compliance + context_compliance
