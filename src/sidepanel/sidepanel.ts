@@ -358,8 +358,8 @@ function paintCompliance(result: Record<string, unknown>): void {
   pushFlag(baseRows, 'EU REACH banned', baseCompliance['is_eu_reach_banned']);
   pushFlag(baseRows, 'Scaffold match', baseCompliance['is_scaffold_match']);
   pushFlag(baseRows, 'Whitelisted', baseCompliance['is_whitelisted'], 'ok');
-  if (typeof baseCompliance['faves_flag_count'] === 'number' && (baseCompliance['faves_flag_count'] as number) > 0) {
-    baseRows.push(['FAVES flags', `<span class="badge warn">${baseCompliance['faves_flag_count']}</span>`]);
+  if (typeof baseCompliance['compliance_flag_count'] === 'number' && (baseCompliance['compliance_flag_count'] as number) > 0) {
+    baseRows.push(['compliance flags', `<span class="badge warn">${baseCompliance['compliance_flag_count']}</span>`]);
   }
   if (baseRows.length > 0) {
     appendSection(el, 'Regulatory flags', () => {
@@ -413,16 +413,16 @@ function paintCompliance(result: Record<string, unknown>): void {
   // Context-compliance dimensions / agents (if returned)
   const dims = ctxCompliance['dimensions'] as Record<string, unknown> | undefined;
   if (dims && Object.keys(dims).length > 0) {
-    appendSection(el, 'FAVES dimensions', () => {
+    appendSection(el, 'compliance dimensions', () => {
       const wrap = document.createElement('div');
-      wrap.className = 'faves-dims';
+      wrap.className = 'compliance-dims';
       for (const [name, dim] of Object.entries(dims)) {
         const status = String((dim as Record<string, unknown>)?.['status'] ?? '');
         const cls = status === 'PASS' ? 'ok' : status === 'WARN' ? 'warn' : status === 'FAIL' ? 'err' : '';
         const dimEl = document.createElement('div');
-        dimEl.className = 'faves-dim';
+        dimEl.className = 'compliance-dim';
         dimEl.innerHTML = `
-          <div class="faves-name">${escapeText(humanizeKey(name))}</div>
+          <div class="compliance-name">${escapeText(humanizeKey(name))}</div>
           <span class="badge ${cls}">${escapeText(status || '—')}</span>
         `;
         wrap.appendChild(dimEl);

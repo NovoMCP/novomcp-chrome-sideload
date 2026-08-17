@@ -4,7 +4,7 @@
  * keys, attaches human-readable labels, and assigns each field to one of
  * five categories. Drives the per-category subsections in the side panel.
  *
- * Source: /Users/ariharrison/Documents/Github/NovoWorkbench/src/utils/normalizeAdmet.ts
+ * Adapted from the Workbench ADMET normalizer.
  */
 
 export type AdmetCategory = 'absorption' | 'distribution' | 'metabolism' | 'excretion' | 'toxicity';
