@@ -1,5 +1,5 @@
 /**
- * Thin HTTPS client for api.novomcp.com.
+ * Thin HTTP client for the configured NovoMCP engine (see getApiBase()).
  *
  * Every request carries:
  *   - Authorization: Bearer <nmcp_ or ncmcp_ key>
@@ -166,7 +166,8 @@ export async function searchSimilar(
 // to v1.1 once we have a feel for what the surface expansion warrants.
 
 /**
- * Full ADMET prediction (40+ ML models, ~20 credits, FREE tier).
+ * Full ADMET prediction (the engine's ADMET model panel — addie-models on a
+ * self-hosted engine).
  * Mirrors NovoWorkbench's pattern — call directly when the rich
  * per-category panel is needed; the embedded call inside
  * get_molecule_profile only fires for novel SMILES.

@@ -1,6 +1,6 @@
 {
   "name": "novomcp-chrome-sideload",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "NovoMCP Chrome extension (sideload) — configurable engine URL, unpacked distribution. ADMET / compliance / drug-likeness on any molecule you read about online.",
   "private": true,
   "type": "module",

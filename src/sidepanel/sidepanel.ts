@@ -40,7 +40,7 @@ const states: Record<StateName, HTMLElement> = {
 let currentSmiles: string | null = null;
 
 /**
- * Lazy-load caches keyed by SMILES. ADMET costs 20cr per call; deep
+ * Lazy-load caches keyed by SMILES. ADMET runs the full model panel per call; deep
  * compliance costs 3cr — fire each at most once per molecule per panel
  * lifetime. Re-opening the tab on the same SMILES re-renders from cache.
  */
@@ -153,7 +153,7 @@ function renderProfile(smiles: string, response: ApiResponse<MoleculeProfile>): 
   // ADMET tab is now lazy-loaded via predict_admet directly — see
   // ensureAdmetLoaded(). The aggregate fields embedded in
   // get_molecule_profile.admet are not used; we always fetch the full
-  // 40+ ML model panel on first ADMET tab open.
+  // ADMET model panel on first ADMET tab open.
   resetAdmetTab();
   // If the user is already viewing ADMET when a new SMILES loads, kick
   // off the fetch immediately rather than waiting for a manual switch.

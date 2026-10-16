@@ -9,7 +9,9 @@
  *      chrome.storage.local first (so the user's engine URL setting wins),
  *      falls back to the hosted API for users who paste an nmcp_* key.
  *   2. manifest.json includes http://localhost:* + http://127.0.0.1:* in
- *      host_permissions so a local NovoMCP engine on :8018 is reachable.
+ *      host_permissions so a local NovoMCP engine on :8018 is reachable, and
+ *      all http/https hosts in optional_host_permissions — the popup requests just
+ *      the configured engine's origin at Connect (e.g. a DGX Spark on the LAN).
  *   3. Popup surfaces the engine-URL setting so users don't have to edit
  *      chrome.storage manually.
  *
@@ -17,7 +19,7 @@
  * namespaces per-surface sessions for the audit log.
  */
 export const SURFACE_TAG = 'chrome-ext-sideload-v1';
-export const UA_PREFIX = 'NovoMCP-ChromeExt-Sideload/0.1.0';
+export const UA_PREFIX = 'NovoMCP-ChromeExt-Sideload/0.2.0';
 
 // Default engine URL — used when the user hasn't set a custom one.
 // Defaults to a local self-hosted engine; point at a hosted engine (with a
