@@ -176,7 +176,6 @@ function renderProfile(smiles: string, response: ApiResponse<MoleculeProfile>): 
   meta.innerHTML = '';
   meta.appendChild(metaPill(p.in_database ? 'cached profile' : 'computed on demand'));
 
-  void renderAdvancedGate();
   void renderCrossSurface(smiles);
 
   show('profile');
@@ -550,22 +549,6 @@ function metaPill(text: string): HTMLElement {
 
 // ─── Advanced tab — Compute calls ─────────────────────────────────────
 
-async function renderAdvancedGate(): Promise<void> {
-  const computeKey = await auth.getComputeKey();
-  const lock = $<HTMLElement>('advanced-lock');
-  const locked = $<HTMLElement>('advanced-locked');
-  const tools = $<HTMLElement>('advanced-tools');
-  if (computeKey) {
-    lock.hidden = true;
-    locked.hidden = true;
-    tools.hidden = false;
-  } else {
-    lock.hidden = false;
-    locked.hidden = false;
-    tools.hidden = true;
-  }
-}
-
 function setupAdvancedHandlers(): void {
   document.querySelectorAll<HTMLElement>('.compute-card').forEach((card) => {
     const tool = card.dataset['tool'] as ComputeTool;
@@ -593,8 +576,8 @@ function resetAdvancedResults(): void {
  *   - Pull `detail` from the inner JSON when present.
  *   - Truncate any embedded SMILES (the QM service likes echoing the
  *     full input back which bloats the message).
- *   - Redact server-config leaks (e.g. "check NOVOMCP_QM_URL configuration"
- *     — that's an ops hint, not a user hint).
+ *   - Keep the engine's setup hints (e.g. "set NOVOMCP_PROPERTIES_URL"): on a
+ *     self-hosted engine the user is the operator, so they're actionable.
  *   - Map HTTP class to a tone: 4xx = molecule issue, 5xx = service hiccup.
  */
 const TOOL_LABEL: Record<ComputeTool, string> = {
@@ -606,6 +589,12 @@ const TOOL_LABEL: Record<ComputeTool, string> = {
 
 function friendlyComputeError(tool: ComputeTool, raw: string): string {
   const label = TOOL_LABEL[tool] ?? 'Calculation';
+
+  // The engine reports a missing backing service as service_not_configured
+  // (or "... not configured" from the service it proxies). Say what to enable.
+  if (/service_not_configured|not configured/i.test(raw)) {
+    return `${label} isn't set up on your engine. It needs the novomcp-properties service (set NOVOMCP_PROPERTIES_URL); see docs.novomcp.com/deploying-services/novomcp-properties.`;
+  }
   const codeMatch = raw.match(/\((\d{3})\)/);
   const status = codeMatch ? Number(codeMatch[1]) : null;
 
@@ -622,8 +611,6 @@ function friendlyComputeError(tool: ComputeTool, raw: string): string {
   }
 
   if (detail) {
-    // Drop server-config leaks (everything after "— check XXX_URL …")
-    detail = detail.replace(/[—-]\s*check\s+\w+_URL\s+configuration[\s\S]*$/i, '').trim();
     // Truncate echoed SMILES so the message stays readable
     detail = detail.replace(/for:\s*[A-Za-z0-9@+\-\[\]()=#$/\\.]{20,}/, 'for this molecule');
     if (detail) return detail;
@@ -633,7 +620,7 @@ function friendlyComputeError(tool: ComputeTool, raw: string): string {
   if (status && status >= 500) return `${label} service is temporarily unavailable. Try again in a moment.`;
   if (status === 422 || status === 400) return `${label} couldn't process this molecule. Try a different scaffold.`;
   if (status === 401) return `${label} requires authentication — add an API key in the popup if your engine needs one.`;
-  if (status === 402) return `${label} isn't available on this engine — wire the compute service (see docs/deploying-services).`;
+  if (status === 402) return `${label} isn't available on this engine. See docs.novomcp.com/deploying-services.`;
   if (status === 429) return `${label} is rate-limited right now. Try again shortly.`;
 
   // Fallback: trim the raw to something readable

@@ -129,12 +129,6 @@ chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) =>
         const smiles = String((message as Record<string, unknown>)['smiles'] || '').trim();
         if (!smiles) { sendResponse({ ok: false, tool, error: 'missing_smiles' }); return; }
 
-        const computeKey = await auth.getComputeKey();
-        if (!computeKey) {
-          sendResponse({ ok: false, tool, error: 'no_compute_key', errorCode: 'no_compute_key' });
-          return;
-        }
-
         const dispatch: Record<ComputeTool, (s: string) => Promise<ApiResponse<unknown>>> = {
           predict_pka: predictPka,
           predict_solubility: predictSolubility,

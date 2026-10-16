@@ -34,11 +34,9 @@ export class ApiError$ extends Error {
 
 async function request<T>(
   path: string,
-  init: RequestInit & { useComputeKey?: boolean } = {},
+  init: RequestInit = {},
 ): Promise<T> {
-  const key = init.useComputeKey
-    ? await auth.getComputeKey()
-    : await auth.getNovoKey();
+  const key = await auth.getNovoKey();
   if (!key) throw new ApiError$(401, { error: 'no_api_key' });
 
   const headers = new Headers(init.headers);
@@ -101,12 +99,10 @@ export async function probeKey(key: string): Promise<NovoUser> {
 async function invokeTool<T>(
   toolName: string,
   args: Record<string, unknown>,
-  opts: { useComputeKey?: boolean } = {},
 ): Promise<ApiResponse<T>> {
   const response = await request<ApiResponse<T>>(`/mcp/tools/${toolName}`, {
     method: 'POST',
     body: JSON.stringify({ arguments: args }),
-    useComputeKey: opts.useComputeKey,
   });
   // Capture funnel_id from every successful tool call so the side panel's
   // cross-surface CTAs can build deep-links without a separate round-trip.
@@ -191,17 +187,17 @@ export async function checkComplianceDeep(smiles: string): Promise<ApiResponse<R
 }
 
 export async function predictPka(smiles: string): Promise<ApiResponse<PkaResult>> {
-  return invokeTool<PkaResult>('predict_pka', { smiles }, { useComputeKey: true });
+  return invokeTool<PkaResult>('predict_pka', { smiles });
 }
 
 export async function predictSolubility(smiles: string): Promise<ApiResponse<SolubilityResult>> {
-  return invokeTool<SolubilityResult>('predict_solubility', { smiles }, { useComputeKey: true });
+  return invokeTool<SolubilityResult>('predict_solubility', { smiles });
 }
 
 export async function predictBde(smiles: string): Promise<ApiResponse<BdeResult>> {
-  return invokeTool<BdeResult>('predict_bde', { smiles }, { useComputeKey: true });
+  return invokeTool<BdeResult>('predict_bde', { smiles });
 }
 
 export async function predictFrontierOrbitals(smiles: string): Promise<ApiResponse<FrontierOrbitalsResult>> {
-  return invokeTool<FrontierOrbitalsResult>('predict_frontier_orbitals', { smiles }, { useComputeKey: true });
+  return invokeTool<FrontierOrbitalsResult>('predict_frontier_orbitals', { smiles });
 }
