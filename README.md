@@ -57,6 +57,11 @@ Once connected, the extension activates on:
 
 Any SMILES string on the page is detectable → click it → the side panel shows ADMET properties, compliance status, drug-likeness scores, and quick actions.
 
+- Detected SMILES get a **dashed underline**. Hover the underlined **text** for a preview card; click it to run the profile, then **Open in sidebar**. The extension reacts to SMILES text, not to structure images. (On PubChem the canonical SMILES is under *Names and Identifiers → Computed Descriptors → SMILES*.)
+- **Reload tabs that were open before you clicked Connect.** The extension decorates pages that load after it's connected, so an already-open tab shows no underlines until you reload it.
+
+Full guide (both add-ins, remote engines, troubleshooting): [docs.novomcp.com/sideload-add-ins](https://docs.novomcp.com/sideload-add-ins/).
+
 ## Development
 
 ```bash
