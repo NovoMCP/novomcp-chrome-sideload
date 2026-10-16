@@ -508,7 +508,7 @@
           <li><strong>Profile</strong> — properties, ADMET, structural alerts</li>
           <li><strong>Compliance</strong> — controlled-substance &amp; compliance checks</li>
           <li><strong>Similar</strong> — chemical-space neighbors</li>
-          <li><strong>Advanced</strong> — pKa, solubility, BDE, frontier orbitals (Compute tier)</li>
+          <li><strong>Advanced</strong> — pKa, solubility, BDE, frontier orbitals (needs the novomcp-properties service on your engine)</li>
         </ul>
       </section>
 
@@ -535,7 +535,7 @@
           <button class="tab" data-tab="admet" role="tab" aria-selected="false">ADMET</button>
           <button class="tab" data-tab="compliance" role="tab" aria-selected="false">Compliance</button>
           <button class="tab" data-tab="similar" role="tab" aria-selected="false">Similar</button>
-          <button class="tab" data-tab="advanced" role="tab" aria-selected="false">Advanced<span class="lock" id="advanced-lock" hidden>🔒</span></button>
+          <button class="tab" data-tab="advanced" role="tab" aria-selected="false">Advanced</button>
         </div>
 
         <div class="tab-panel active" id="panel-profile" role="tabpanel">
@@ -574,13 +574,8 @@
         </div>
 
         <div class="tab-panel" id="panel-advanced" role="tabpanel">
-          <div id="advanced-locked" class="gate-locked" hidden>
-            <div class="display">Compute tier required</div>
-            <p>Wire the QM/NNP compute service on your engine to enable pKa, solubility, BDE, and frontier-orbital predictions. See docs/deploying-services.</p>
-            <p style="margin-top: 6px; font-size: 11px;">Long-running jobs (MD, FEP) initiate from any AI assistant connected to NovoMCP and stay on the same funnel; results land in your dashboard's audit log.</p>
-          </div>
-          <div id="advanced-tools" hidden>
-            <p class="muted" style="font-size: 11px; margin-bottom: 4px;">Sync compute against the current molecule. Each call lands on this funnel and is visible across surfaces.</p>
+          <div id="advanced-tools">
+            <p class="muted" style="font-size: 11px; margin-bottom: 4px;">Runs on your engine against the current molecule. Needs the novomcp-properties service (frontier orbitals also uses novomcp-qm); a tool that isn't set up says so.</p>
             <div class="compute-card" data-tool="predict_pka">
               <div class="head"><span class="name">pKa</span><button data-action="run">Run</button></div>
               <div class="body" data-result>Click run to predict ionization sites and pKa values.</div>
