@@ -37,13 +37,33 @@ function isLocalEngineUrl(url: string): boolean {
   return /^https?:\/\/(localhost|127\.0\.0\.1)/i.test(url);
 }
 
+/**
+ * Engines off this machine (e.g. a DGX Spark on the LAN at
+ * http://spark-xxxx.local:8018) aren't covered by the manifest's static
+ * localhost host_permissions, and the engine's CORS allow-list only pins the
+ * Web Store extension ID — so without a host grant every fetch is blocked.
+ * Ask for exactly the engine's origin (from optional_host_permissions); Chrome
+ * resolves immediately with no prompt if it's already granted. Must run inside
+ * the Connect click's user gesture, before any other await.
+ */
+async function ensureHostPermission(apiBase: string): Promise<boolean> {
+  let url: URL;
+  try {
+    url = new URL(apiBase);
+  } catch {
+    return false;
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return false;
+  return chrome.permissions.request({ origins: [`${url.protocol}//${url.hostname}/*`] });
+}
+
 async function renderConnected(_user: NovoUser | null): Promise<void> {
   const base = await getApiBase();
   const local = isLocalEngineUrl(base);
   $<HTMLElement>('user-engine').textContent = base;
   $<HTMLElement>('user-mode').innerHTML = local
     ? '<span class="badge ok">local single-user</span>'
-    : '<span class="badge">hosted / self-hosted</span>';
+    : '<span class="badge">self-hosted</span>';
   show('connected');
 }
 
@@ -60,11 +80,10 @@ async function bootstrap(): Promise<void> {
     await auth.setUser(user);
     await renderConnected(user);
   } catch (err) {
-    // Local engines don't return standard NovoUser; treat any non-4xx as
-    // "engine reachable, connected." Only unauth OR total unreachable
-    // should drop us back to onboarding.
-    const base = await getApiBase();
-    if (isLocalEngineUrl(base) && err instanceof ApiError$ && !err.isUnauthorized) {
+    // Self-hosted engines (localhost or LAN) don't return a standard NovoUser;
+    // any non-401 response means "engine reachable, connected." Only unauth
+    // OR total unreachable should drop us back to onboarding.
+    if (err instanceof ApiError$ && !err.isUnauthorized) {
       await renderConnected(null);
       return;
     }
@@ -90,14 +109,25 @@ async function handleConnect(event: Event): Promise<void> {
   const apiBase = ($<HTMLInputElement>('api-base')).value.trim() || API_BASE_DEFAULT;
   const novoKey = ($<HTMLInputElement>('novo-key')).value.trim();
 
-  // Persist engine URL first so probeKey targets the right engine.
+  // Host grant first — permissions.request needs the click's user gesture.
+  let granted = false;
+  try {
+    granted = await ensureHostPermission(apiBase);
+  } catch {
+    granted = false;
+  }
+  if (!granted) {
+    showError('Chrome needs permission to reach that engine URL. Check the URL and allow access when prompted.');
+    return;
+  }
+
+  // Persist engine URL so probeKey targets the right engine.
   if (apiBase && apiBase !== API_BASE_DEFAULT) {
     await chrome.storage.local.set({ [STORAGE_KEYS.apiBase]: apiBase });
   } else {
     await chrome.storage.local.remove(STORAGE_KEYS.apiBase);
   }
 
-  const local = isLocalEngineUrl(apiBase);
   // The API key is optional. A self-hosted engine accepts any bearer token via
   // LocalAuthGate — including blank (we substitute 'local-dev' below). Supply a
   // key only if you point at an engine that requires auth (e.g. a compliance service).
@@ -113,10 +143,10 @@ async function handleConnect(event: Event): Promise<void> {
     await auth.setUser(user);
     await renderConnected(user);
   } catch (err) {
-    // Local engines return a shape probeKey doesn't recognize — but if the
-    // engine responded at all, treat it as connected. Only reject on 401
-    // (bad key on hosted API) or network failure.
-    if (local && err instanceof ApiError$ && !err.isUnauthorized) {
+    // Self-hosted engines (localhost or LAN) return a shape probeKey doesn't
+    // recognize — but if the engine responded at all, treat it as connected.
+    // Only reject on 401 (engine requires a key) or network failure.
+    if (err instanceof ApiError$ && !err.isUnauthorized) {
       await auth.setNovoKey(effectiveKey);
       await renderConnected(null);
       return;

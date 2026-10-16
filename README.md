@@ -4,8 +4,8 @@ Molecular intelligence for PubChem, ChEMBL, and preprints — configurable engin
 
 This is the **sideload/OSS variant** of the NovoMCP Chrome extension. It differs from the [production build](https://github.com/novomcp/novomcp-chrome-extension) in three ways:
 
-1. **Configurable engine URL** — defaults to `https://api.novomcp.com`, but the popup surfaces an "Engine URL" setting so you can point at `http://localhost:8018` (your local NovoMCP OSS engine) or any self-hosted deployment.
-2. **`localhost` in `host_permissions`** — the manifest whitelists `http://localhost/*` and `http://127.0.0.1/*` so the extension can reach a local engine.
+1. **Configurable engine URL** — defaults to `http://localhost:8018` (your local NovoMCP engine); the popup's "Engine URL" setting points it at a DGX Spark on your network or any self-hosted deployment.
+2. **Self-hosted engine access** — the manifest grants `http://localhost/*` and `http://127.0.0.1/*` up front, and lists `http(s)://*/*` under `optional_host_permissions` so the popup can request access to exactly the engine host you configure (e.g. a Spark on the LAN).
 3. **No Chrome Web Store distribution** — load unpacked from `dist/` after `npm run build`. No developer-account fees, no store review, no wait.
 
 ## Install
@@ -30,25 +30,22 @@ The NovoMCP icon appears in the toolbar.
 
 ## Configure
 
-Click the NovoMCP toolbar icon → popup opens.
+Click the NovoMCP toolbar icon → popup opens. Enter an **Engine URL**, leave the API key blank for a single-user engine (`LocalAuthGate` accepts any bearer token), and click **Connect**.
 
-**Option A — talk to your local OSS engine:**
-1. Start the engine locally (from the [OSS repo](https://github.com/novomcp/novomcp)): `python main_https.py`
-2. In the popup, expand **Self-hosted or local NovoMCP engine (advanced)**
-3. Set **Engine URL** to `http://localhost:8018`
-4. Leave the API key blank (or type any string — `LocalAuthGate` accepts any bearer token)
-5. Click **Connect**
-
-**Option B — talk to the hosted API:**
-1. Sign up at [app.novomcp.com/signup](https://app.novomcp.com/signup)
-2. Copy your `nmcp_*` key from [app.novomcp.com/keys](https://app.novomcp.com/keys)
-3. Paste into the popup's **Novo API key** field
-4. Click **Connect**
-
-**Option C — talk to your own self-hosted engine:**
-1. Set **Engine URL** to your engine's public URL (e.g. `https://novomcp.your-lab.edu`)
-2. Paste any API key your engine expects (or leave blank if you're running the OSS LocalAuthGate)
+**Option A — an engine on this machine:**
+1. Start the engine (from the [engine repo](https://github.com/novomcp/novomcp)): `docker compose up -d` — see the [quickstart](https://docs.novomcp.com/quickstart/)
+2. Leave **Engine URL** at the default, `http://localhost:8018`
 3. Click **Connect**
+
+**Option B — a DGX Spark (or any engine) on your network:**
+1. Bring the engine up on the Spark: [Run the whole engine on an NVIDIA DGX Spark](https://docs.novomcp.com/novo-station-dgx-spark/) (`docker compose -f compose.spark.yml up -d`)
+2. Set **Engine URL** to the Spark's address, e.g. `http://spark-xxxx.local:8018` or `http://192.168.1.50:8018`
+3. Click **Connect** — Chrome asks once for permission to reach that address (requested from `optional_host_permissions`, scoped to just that host)
+
+**Option C — a self-hosted deployment behind a domain:**
+1. Set **Engine URL** to your engine's URL (e.g. `https://novomcp.your-lab.edu`)
+2. Paste any API key your engine expects (or leave blank for `LocalAuthGate`)
+3. Click **Connect** and allow access when prompted
 
 ## Use
 
@@ -80,16 +77,16 @@ Everything user-visible: ambient SMILES detection, side panel UI, the tool catal
 | | Production | Sideload |
 |---|---|---|
 | Distribution | Chrome Web Store (`.zip` submission) | Unpacked from `dist/` |
-| Engine URL | Hardcoded `https://api.novomcp.com` | Configurable, defaults to hosted |
-| `host_permissions` | Production hosts only | + `http://localhost/*` + `http://127.0.0.1/*` |
+| Engine URL | Hardcoded `https://api.novomcp.com` | Configurable, defaults to `http://localhost:8018` |
+| `host_permissions` | Production hosts only | + `http://localhost/*` + `http://127.0.0.1/*`; other engine hosts requested at Connect |
 | Manifest `key` field | Yes (stable extension ID for the Web Store listing) | No (unpacked extensions don't need it) |
 | Extension name | "NovoMCP" | "NovoMCP (Sideload)" |
-| API key required? | Yes (`nmcp_*` for the hosted API) | Optional (blank works for local engine) |
+| API key required? | Yes (`nmcp_*` for the hosted API) | Optional (blank works for a single-user engine) |
 
 ## Support
 
 - **NovoMCP OSS engine:** https://github.com/novomcp/novomcp
-- **Docs:** https://github.com/novomcp/novomcp/tree/main/docs
+- **Docs:** https://docs.novomcp.com/
 - **Issues:** file against this repo for extension bugs, against `novomcp/novomcp` for engine bugs.
 
 ## License

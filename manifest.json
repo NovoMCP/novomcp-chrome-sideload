@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "NovoMCP (Sideload)",
   "short_name": "NovoMCP",
-  "description": "Molecular intelligence for PubChem, ChEMBL, and preprints. Sideload build: configurable engine URL (defaults to https://api.novomcp.com; point at http://localhost:8018 for local OSS use).",
-  "version": "0.1.0",
+  "description": "Molecular intelligence for PubChem, ChEMBL, and preprints, on your own NovoMCP engine (local, LAN / DGX Spark, or self-hosted).",
+  "version": "0.2.0",
   "minimum_chrome_version": "116",
   "icons": {
     "16": "public/icons/icon-16.png",
@@ -47,6 +47,10 @@
     "https://www.biorxiv.org/*",
     "https://www.medrxiv.org/*",
     "https://arxiv.org/*"
+  ],
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
   ],
   "content_scripts": [
     {
